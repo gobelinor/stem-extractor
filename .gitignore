@@ -7,6 +7,9 @@ dist/
 # wrangler / cloudflare
 .wrangler/
 
+# source video for the demo (the exported GIF lives in docs/)
+stem-extractor-poc.mp4
+
 # logs
 *.log
 npm-debug.log*

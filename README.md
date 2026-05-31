@@ -8,8 +8,9 @@
   <a href="https://github.com/gobelinor/stem-extractor/issues/new/choose">Request a machine</a>
 </p>
 
-<!-- Drag your demo.mp4 onto this line in the GitHub README editor — it gets hosted automatically. -->
-<p align="center"><i>(demo video coming soon)</i></p>
+<p align="center">
+  <a href="https://stem-extractor.pages.dev"><img src="docs/demo.gif" alt="Stem Extractor demo — solo each track, record, aligned WAV stems" width="720"></a>
+</p>
 
 Most grooveboxes only expose a **stereo** master over USB — there's no multitrack audio out, so
 getting stems means soloing each track by hand, recording, and repeating. Stem Extractor automates
