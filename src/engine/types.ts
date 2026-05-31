@@ -13,13 +13,12 @@ export interface AudioDeviceInfo {
   label: string;
 }
 
-export type BarLength = 8 | 16;
-
 export interface CaptureSettings {
   /** Nom du projet → utilisé pour nommer les stems et le dossier de download. */
   projectName: string;
   bpm: number;
-  bars: BarLength;
+  /** Nombre de bars à enregistrer (4/4). Libre. */
+  bars: number;
   /** Décalage MIDI(start) → arrivée audio USB, en ms. Trim de la fenêtre. */
   latencyOffsetMs: number;
   /** Secondes enregistrées en plus des bars, pour laisser sonner les tails. */

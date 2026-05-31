@@ -1,8 +1,15 @@
-import { useState } from "react";
-import type { BarLength, CaptureSettings, CaptureStatus } from "../../engine/types";
+import { useEffect, useState } from "react";
+import type { CaptureSettings, CaptureStatus } from "../../engine/types";
 import { slugify } from "../../engine/io/naming";
 
-const barOptions: BarLength[] = [8, 16];
+const barPresets = [8, 16, 32, 64];
+const MAX_BARS = 512;
+
+function fmtDuration(sec: number): string {
+  const m = Math.floor(sec / 60);
+  const s = Math.round(sec % 60);
+  return m > 0 ? `${m}:${String(s).padStart(2, "0")}` : `${s}s`;
+}
 const inputCls =
   "w-full rounded-lg border border-[var(--color-edge)] bg-[var(--color-ink)] px-3 py-2 text-sm outline-none focus:border-[var(--color-accent)]";
 const labelCls = "mb-1.5 block text-xs uppercase tracking-wide text-[var(--color-mute)]";
@@ -28,8 +35,22 @@ export function CaptureControls({
   const [measuring, setMeasuring] = useState(false);
   const [bpmHint, setBpmHint] = useState<string | null>(null);
 
+  // Champ bars libre : on garde un état texte pour autoriser la case vide pendant
+  // la saisie (sinon un 1 se réinsère dès qu'on efface). On commit un nombre clampé.
+  const [barsText, setBarsText] = useState(String(settings.bars));
+  useEffect(() => setBarsText(String(settings.bars)), [settings.bars]);
+  const onBarsInput = (v: string) => {
+    if (v !== "" && !/^\d+$/.test(v)) return; // chiffres uniquement
+    setBarsText(v);
+    if (v === "") return; // case vide tolérée, pas de commit
+    onChange({ ...settings, bars: Math.max(1, Math.min(MAX_BARS, Number(v))) });
+  };
+
   const allTracks = Array.from({ length: trackCount }, (_, i) => i + 1);
   const enabledCount = allTracks.filter((t) => !settings.disabledTracks.includes(t)).length;
+  const perStemSec = (settings.bars * 4 * 60) / settings.bpm + settings.tailSec;
+  const totalSec = perStemSec * enabledCount;
+  const heavyCapture = totalSec > 360; // ~6 min total → mémoire/temps notables
   const toggleTrack = (t: number) => {
     const disabled = settings.disabledTracks.includes(t)
       ? settings.disabledTracks.filter((x) => x !== t)
@@ -106,19 +127,27 @@ export function CaptureControls({
 
       <div className="grid gap-5 sm:grid-cols-2">
         <div>
-          <span className={labelCls}>Length</span>
+          <span className={labelCls}>Length (bars)</span>
           <div className="flex gap-2">
-            {barOptions.map((b) => (
+            <input
+              type="text"
+              inputMode="numeric"
+              value={barsText}
+              onChange={(e) => onBarsInput(e.target.value)}
+              onBlur={() => setBarsText(String(settings.bars))}
+              className={inputCls}
+            />
+            {barPresets.map((b) => (
               <button
                 key={b}
                 onClick={() => onChange({ ...settings, bars: b })}
-                className={`flex-1 rounded-lg border px-3 py-2 text-sm transition ${
+                className={`shrink-0 rounded-lg border px-3 text-sm transition ${
                   settings.bars === b
                     ? "border-[var(--color-accent)] bg-[var(--color-accent)]/10 text-[var(--color-accent)]"
                     : "border-[var(--color-edge)] hover:border-[var(--color-mute)]"
                 }`}
               >
-                {b} bars
+                {b}
               </button>
             ))}
           </div>
@@ -173,6 +202,16 @@ export function CaptureControls({
         Check first: with all tracks muted and the sequencer running, nothing should play. Any
         bleed-through ends up in every stem.
       </p>
+
+      <div className="text-xs text-[var(--color-mute)]">
+        ≈ {fmtDuration(perStemSec)} per stem · ~{fmtDuration(totalSec)} total
+        {heavyCapture && (
+          <span className="text-amber-300/90">
+            {" "}
+            — long capture, keep an eye on memory (stems are held in RAM until downloaded)
+          </span>
+        )}
+      </div>
 
       <div className="flex items-center gap-4">
         <button
