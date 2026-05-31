@@ -26,6 +26,8 @@ drop them into your DAW and they're in time.
 ## Run
 
 ```bash
+git clone https://github.com/gobelinor/stem-extractor.git
+cd stem-extractor
 npm install
 npm run dev   # http://localhost:5173 in Chrome/Edge (no Safari)
 ```
