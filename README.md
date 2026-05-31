@@ -1,52 +1,105 @@
-# Stem Extractor — POC
+# Stem Extractor
 
-Web app : branche une machine à musique en USB (MVP = **OP-XY**), isole chaque piste en
-MIDI (solo), enregistre la sortie audio stéréo piste par piste, et produit un set de
-**stems WAV** alignés.
+Pull clean per-track **WAV stems** out of a hardware music machine, straight from the browser.
 
-## Lancer
+Most grooveboxes only expose a **stereo** master over USB — there's no multitrack audio out. So
+getting stems means soloing each track by hand, recording, and repeating. Stem Extractor automates
+that: it **solos each track over MIDI**, records the machine's stereo output, and gives you one
+aligned WAV per track.
+
+> **Currently supports the OP-XY.** Other machines are easy to add — see
+> [Add a machine](#add-a-machine). Requests welcome via
+> [issues](https://github.com/gobelinor/stem-extractor/issues/new/choose).
+
+## Screenshots
+
+<!-- ![demo](docs/demo.gif) — record a short Setup → Capture → Stems flow and drop it here -->
+_(demo GIF coming soon)_
+
+## How it works
+
+1. **MIDI solo** — for each track, the app mutes every other track (the OP-XY exposes mute on
+   `CC9`, one track per MIDI channel) so only the target plays.
+2. **App is the clock master** — it sends MIDI Start + clock (24 ppqn) + Stop, so it knows the
+   exact musical window. The machine follows the external clock.
+3. **Audio capture** — the machine's stereo USB output is recorded through `getUserMedia` + an
+   AudioWorklet (no browser processing), then encoded to lossless WAV.
+4. **Tail** — recording continues a few extra seconds after the bars so reverb/pad tails ring out
+   instead of being cut.
+
+Everything runs client-side; audio never leaves your machine.
+
+## Run
 
 ```bash
 npm install
 npm run dev
-# ouvrir http://localhost:5173 dans Chrome ou Edge (pas Safari : pas de Web MIDI)
+# open http://localhost:5173 in Chrome or Edge (Safari has no Web MIDI)
 ```
 
-## Pré-requis côté OP-XY
+## OP-XY setup
 
-1. Branché en USB-C.
-2. **Sortie USB audio activée** (la machine doit apparaître comme device audio).
-3. **Clock externe** : l'app est l'horloge maître (elle envoie Start + MIDI clock + Stop).
+1. Connect over USB-C.
+2. **Enable USB audio output** so the OP-XY shows up as an audio device.
+3. `COM → system → midi`: set **clock** to **both** and enable **midi IN** — so it follows the
+   app's clock and the solo (CC9). "both" also lets **Get BPM** read the project tempo.
 
-## Utilisation
-
-1. **Setup** → « Autoriser MIDI & audio », puis choisir la sortie MIDI, l'entrée MIDI
-   (diagnostic) et le device audio de la machine. L'OP-XY est auto-détecté.
-2. **Capture** → choisir 8 / 16 bars, le BPM, l'offset de latence, puis lancer.
-   L'app boucle sur les 8 pistes : solo (CC9) → lecture N bars → enregistrement.
-3. **Stems** → un WAV par piste, écoute + download.
-
-## Calibration latence
-
-`Latence (ms)` compense le délai entre l'envoi du Start MIDI et l'arrivée de l'audio USB.
-Si les stems sont en avance/retard, ajuster (typiquement quelques dizaines de ms).
+> ⚠️ Before exporting, check on the device: with all tracks muted and the sequencer running,
+> nothing should still play. Anything that bleeds through the mutes (a looping bass, a held note)
+> ends up in every stem. Isolation uses **mute only** — the app never touches your volumes or mix.
 
 ## Architecture
 
 ```
-src/engine/   TS pur, agnostique UI
+src/engine/   framework-agnostic TypeScript (no React)
   midi/       MidiEngine, ClockMaster (app = master), messages
   audio/      AudioRecorder (getUserMedia + AudioWorklet), wav-encoder
-  capture/    StemCapture (boucle solo → record → encode)
+  capture/    StemCapture (loop: solo → record → encode)
   machines/   MachineDriver (interface) + op-xy.ts + registry
-src/ui/       React + Tailwind (hooks + composants)
+  io/         naming, download
+src/ui/       React + Tailwind (hooks + components)
 ```
 
-**Ajouter une machine** = un fichier dans `engine/machines/` implémentant `MachineDriver`,
-ajouté au `registry`. Le cœur (clock, capture, WAV) ne change pas.
+The engine is fully decoupled from the UI: all the hard parts (MIDI, audio, WAV, sync) are plain
+TypeScript, so the framework only renders.
 
-## Limites (POC)
+## Add a machine
 
-- Chrome / Edge uniquement (Web MIDI).
-- Sortie stéréo (pas de multitrack USB — d'où l'approche solo).
-- Pas d'auth / stockage / normalisation / zip (étapes suivantes).
+A machine is one file implementing the `MachineDriver` interface
+(`src/engine/machines/MachineDriver.ts`):
+
+```ts
+export interface MachineDriver {
+  id: string;
+  name: string;
+  trackCount: number;
+  midiPortMatch(name: string): boolean;     // recognise the MIDI port by name
+  audioDeviceMatch(label: string): boolean; // recognise the audio device by label
+  trackLabel(track: number): string;
+  soloTrack(track: number): MidiMessage[];  // target audible, others muted
+  unmuteAll(): MidiMessage[];               // reset
+}
+```
+
+Then register it in `src/engine/machines/registry.ts`. The rest of the engine (clock, capture, WAV)
+doesn't change. See `src/engine/machines/op-xy.ts` for a reference implementation.
+
+Don't have time to code it? Open a
+[machine support request](https://github.com/gobelinor/stem-extractor/issues/new/choose) with the
+machine's MIDI implementation and it can be added.
+
+## Roadmap
+
+- Batch export across **all projects** on the device (the OP-XY exposes a `project` CC).
+- More machine drivers (community-driven).
+- Stem management / DAW handoff.
+
+## Limitations
+
+- Chrome / Edge only (Web MIDI).
+- Stereo capture (no multitrack USB — hence the solo approach).
+
+## Support
+
+Stem Extractor is free and open. If it saved you time, you can
+[buy me a coffee](https://ko-fi.com/thankyoufriend) ☕ — entirely optional.

@@ -1,0 +1,73 @@
+name: 🎛️ Machine support request
+description: Request (or help add) support for a new music machine
+labels: ["machine-support"]
+title: "[Machine] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Adding a machine is mostly a matter of knowing its MIDI implementation. The more of
+        the fields below you can fill, the faster it can be supported. A driver is a single
+        file implementing the `MachineDriver` interface — see the README's "Add a machine".
+  - type: input
+    id: machine
+    attributes:
+      label: Machine
+      placeholder: "Elektron Digitakt II"
+    validations:
+      required: true
+  - type: input
+    id: manufacturer
+    attributes:
+      label: Manufacturer
+      placeholder: "Elektron"
+    validations:
+      required: true
+  - type: dropdown
+    id: usb_audio
+    attributes:
+      label: USB audio output
+      description: How does the machine expose audio to a computer over USB?
+      options:
+        - "Class-compliant stereo (master out)"
+        - "Class-compliant multichannel (per-track)"
+        - "Not class-compliant / needs a driver"
+        - "No USB audio"
+        - "I don't know"
+    validations:
+      required: true
+  - type: textarea
+    id: mute_solo
+    attributes:
+      label: Track mute / solo over MIDI
+      description: How is a track muted/soloed via incoming MIDI? Give CC numbers and channel mapping if you know them.
+      placeholder: "Mute = CC9 (0 unmute, 1-127 mute), one track per MIDI channel 1-8"
+    validations:
+      required: false
+  - type: dropdown
+    id: clock
+    attributes:
+      label: MIDI clock
+      description: Can the machine receive an external MIDI clock and follow transport (start/stop)?
+      options:
+        - "Receives external clock + transport"
+        - "Sends clock only"
+        - "Both send and receive"
+        - "No MIDI clock"
+        - "I don't know"
+    validations:
+      required: true
+  - type: input
+    id: midi_chart
+    attributes:
+      label: Link to MIDI implementation chart / manual
+      placeholder: "https://…"
+    validations:
+      required: false
+  - type: checkboxes
+    id: help
+    attributes:
+      label: Can you help?
+      options:
+        - label: I own this machine and can test a driver
+        - label: I can contribute the driver code (PR)

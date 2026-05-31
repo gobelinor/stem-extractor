@@ -100,7 +100,7 @@ export default function App() {
         <span>Chrome / Edge required (Web MIDI).</span>
         <span className="flex shrink-0 items-center gap-3">
           <a
-            href="https://github.com/gobelinor/stem-extractor/issues/new"
+            href="https://github.com/gobelinor/stem-extractor/issues/new/choose"
             target="_blank"
             rel="noopener noreferrer"
             className="transition-colors hover:text-[var(--color-accent)]"

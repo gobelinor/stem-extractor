@@ -1,0 +1,36 @@
+name: ✨ Feature request
+description: Suggest an idea or improvement for Stem Extractor
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for taking the time to suggest a feature!
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      description: Describe the workflow pain or the limitation you hit.
+      placeholder: "When I extract stems I have to…"
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: What would you like the app to do?
+    validations:
+      required: false
+  - type: input
+    id: machine
+    attributes:
+      label: Machine / context
+      description: Which device(s) is this about, if relevant?
+      placeholder: "OP-XY"
+    validations:
+      required: false
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you've considered
+    validations:
+      required: false
