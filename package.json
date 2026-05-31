@@ -4,6 +4,7 @@
   "version": "0.0.1",
   "type": "module",
   "description": "Web app: branche une machine USB (OP-XY...), solo chaque piste en MIDI, enregistre des stems audio.",
+  "license": "PolyForm-Noncommercial-1.0.0",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
