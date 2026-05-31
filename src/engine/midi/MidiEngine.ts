@@ -33,6 +33,14 @@ export class MidiEngine {
     return [...this.access.inputs.values()].map(portInfo);
   }
 
+  get selectedOutputId(): string | null {
+    return this.output?.id ?? null;
+  }
+
+  get selectedInputId(): string | null {
+    return this.input?.id ?? null;
+  }
+
   selectOutput(id: string): void {
     this.output = this.access?.outputs.get(id) ?? null;
   }

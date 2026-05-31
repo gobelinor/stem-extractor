@@ -52,31 +52,55 @@ export function useMidi() {
     return { outputs, inputs };
   }, []);
 
+  /**
+   * (Re)sélectionne les ports de la machine connue UNIQUEMENT si la sélection
+   * courante est absente ou a disparu de la liste. Ne vole jamais une sélection
+   * valide existante (manuelle ou auto). Rejouée sur statechange → gère le
+   * branchement à chaud et l'énumération tardive après un reload.
+   */
+  const autoSelect = useCallback((outputs: MidiPortInfo[], inputs: MidiPortInfo[]) => {
+    const eng = engine.current;
+
+    const outValid = !!eng.selectedOutputId && outputs.some((o) => o.id === eng.selectedOutputId);
+    if (!outValid) {
+      const out = outputs.find((o) => matchDriverByPort(o.name));
+      if (out) eng.selectOutput(out.id);
+    }
+
+    const inValid = !!eng.selectedInputId && inputs.some((i) => i.id === eng.selectedInputId);
+    if (!inValid) {
+      const inp = inputs.find((i) => matchDriverByPort(i.name));
+      if (inp) eng.selectInput(inp.id); // (re)attache le handler onmidimessage
+    }
+
+    const selName =
+      outputs.find((o) => o.id === eng.selectedOutputId)?.name ??
+      inputs.find((i) => i.id === eng.selectedInputId)?.name ??
+      "";
+    setState((s) => ({
+      ...s,
+      selectedOutput: eng.selectedOutputId,
+      selectedInput: eng.selectedInputId,
+      driver: matchDriverByPort(selName) ?? s.driver,
+    }));
+  }, []);
+
   const init = useCallback(async () => {
     try {
       await engine.current.init();
       const { outputs, inputs } = refresh();
-      engine.current.onStateChange(refresh);
-
-      // Auto-sélection si l'OP-XY (ou autre machine connue) est détecté.
-      const out = outputs.find((o) => matchDriverByPort(o.name));
-      const inp = inputs.find((i) => matchDriverByPort(i.name));
-      const driver = matchDriverByPort(out?.name ?? inp?.name ?? "") ?? null;
-      if (out) engine.current.selectOutput(out.id);
-      if (inp) engine.current.selectInput(inp.id);
-
-      setState((s) => ({
-        ...s,
-        ready: true,
-        error: null,
-        selectedOutput: out?.id ?? null,
-        selectedInput: inp?.id ?? null,
-        driver,
-      }));
+      // Sur tout changement d'état des ports (branchement, reconnexion,
+      // énumération tardive), on rafraîchit la liste ET on re-tente la sélection.
+      engine.current.onStateChange(() => {
+        const lists = refresh();
+        autoSelect(lists.outputs, lists.inputs);
+      });
+      autoSelect(outputs, inputs);
+      setState((s) => ({ ...s, ready: true, error: null }));
     } catch (e) {
       setState((s) => ({ ...s, error: e instanceof Error ? e.message : String(e) }));
     }
-  }, [refresh]);
+  }, [refresh, autoSelect]);
 
   // Diagnostic : sniffe l'entrée MIDI sélectionnée.
   useEffect(() => {
