@@ -1,20 +1,27 @@
-# Stem Extractor
+<h1 align="center">🎛️ Stem Extractor</h1>
 
-Pull clean per-track **WAV stems** out of a hardware music machine, straight from the browser.
+<p align="center"><b>Pull aligned per-track WAV stems out of your hardware — straight from the browser.</b></p>
 
-Most grooveboxes only expose a **stereo** master over USB — there's no multitrack audio out. So
+<p align="center">
+  <a href="https://stem-extractor.pages.dev"><b>▶ Try it</b></a> ·
+  <a href="#how-it-works">How it works</a> ·
+  <a href="https://github.com/gobelinor/stem-extractor/issues/new/choose">Request a machine</a>
+</p>
+
+<!-- Drag your demo.mp4 onto this line in the GitHub README editor — it gets hosted automatically. -->
+<p align="center"><i>(demo video coming soon)</i></p>
+
+Most grooveboxes only expose a **stereo** master over USB — there's no multitrack audio out, so
 getting stems means soloing each track by hand, recording, and repeating. Stem Extractor automates
-that: it **solos each track over MIDI**, records the machine's stereo output, and gives you one
-aligned WAV per track.
+the whole thing.
+
+- 🎚️ **Solo + record, automated** — it solos each track over MIDI and records the stereo output, one track at a time.
+- 🎯 **Sample-aligned** — the app drives the clock, so every stem lines up. Drop them into your DAW and they're perfectly in time.
+- 🔒 **Local & free** — runs entirely in your browser, audio never leaves your machine, no signup, open-source.
 
 > **Currently supports the OP-XY.** Other machines are easy to add — see
 > [Add a machine](#add-a-machine). Requests welcome via
 > [issues](https://github.com/gobelinor/stem-extractor/issues/new/choose).
-
-## Screenshots
-
-<!-- ![demo](docs/demo.gif) — record a short Setup → Capture → Stems flow and drop it here -->
-_(demo GIF coming soon)_
 
 ## How it works
 
