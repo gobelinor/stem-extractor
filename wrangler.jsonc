@@ -1,0 +1,6 @@
+{
+  // Cloudflare Pages — direct-upload project (no Git integration).
+  // Deploy with: npm run deploy
+  "name": "stem-extractor",
+  "pages_build_output_dir": "dist"
+}

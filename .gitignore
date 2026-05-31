@@ -4,6 +4,9 @@ node_modules/
 # build output
 dist/
 
+# wrangler / cloudflare
+.wrangler/
+
 # logs
 *.log
 npm-debug.log*
