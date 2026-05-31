@@ -24,6 +24,8 @@ export interface CaptureSettings {
   latencyOffsetMs: number;
   /** Secondes enregistrées en plus des bars, pour laisser sonner les tails. */
   tailSec: number;
+  /** Pistes exclues de l'enregistrement (numéros 1-based). Vide = toutes. */
+  disabledTracks: number[];
 }
 
 export interface Stem {
@@ -36,6 +38,6 @@ export interface Stem {
 
 export type CaptureStatus =
   | { phase: "idle" }
-  | { phase: "running"; track: number; total: number }
+  | { phase: "running"; track: number; index: number; total: number }
   | { phase: "done" }
   | { phase: "error"; message: string };

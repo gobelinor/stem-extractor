@@ -30,12 +30,16 @@ export class StemCapture {
     onProgress: (s: CaptureStatus) => void
   ): Promise<Stem[]> {
     const stems: Stem[] = [];
-    const total = this.driver.trackCount;
     const tailSec = Math.max(0, settings.tailSec);
+    const targets: number[] = [];
+    for (let t = 1; t <= this.driver.trackCount; t++) {
+      if (!settings.disabledTracks.includes(t)) targets.push(t);
+    }
 
     try {
-      for (let track = 1; track <= total; track++) {
-        onProgress({ phase: "running", track, total });
+      for (let i = 0; i < targets.length; i++) {
+        const track = targets[i];
+        onProgress({ phase: "running", track, index: i + 1, total: targets.length });
 
         this.midi.sendMany(this.driver.soloTrack(track));
         await sleep(SETTLE_MS);

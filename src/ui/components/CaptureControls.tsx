@@ -28,6 +28,15 @@ export function CaptureControls({
   const [measuring, setMeasuring] = useState(false);
   const [bpmHint, setBpmHint] = useState<string | null>(null);
 
+  const allTracks = Array.from({ length: trackCount }, (_, i) => i + 1);
+  const enabledCount = allTracks.filter((t) => !settings.disabledTracks.includes(t)).length;
+  const toggleTrack = (t: number) => {
+    const disabled = settings.disabledTracks.includes(t)
+      ? settings.disabledTracks.filter((x) => x !== t)
+      : [...settings.disabledTracks, t];
+    onChange({ ...settings, disabledTracks: disabled });
+  };
+
   const getBpm = async () => {
     setMeasuring(true);
     setBpmHint("Start playback on the device (clock OUT enabled)…");
@@ -60,6 +69,40 @@ export function CaptureControls({
           stems named: <code>{slugify(settings.projectName)}_{settings.bpm}bpm_01.wav</code>
         </span>
       </label>
+
+      <div>
+        <div className="mb-1.5 flex items-center justify-between">
+          <span className={labelCls}>Tracks</span>
+          <span className="text-xs text-[var(--color-mute)]">
+            <button onClick={() => onChange({ ...settings, disabledTracks: [] })} className="hover:text-[var(--color-accent)]">
+              all
+            </button>{" "}
+            ·{" "}
+            <button onClick={() => onChange({ ...settings, disabledTracks: allTracks })} className="hover:text-[var(--color-accent)]">
+              none
+            </button>
+          </span>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {allTracks.map((t) => {
+            const on = !settings.disabledTracks.includes(t);
+            return (
+              <button
+                key={t}
+                onClick={() => toggleTrack(t)}
+                aria-pressed={on}
+                className={`h-9 w-9 rounded-lg border text-sm tabular-nums transition ${
+                  on
+                    ? "border-[var(--color-accent)] bg-[var(--color-accent)]/10 text-[var(--color-accent)]"
+                    : "border-[var(--color-edge)] text-[var(--color-mute)] hover:border-[var(--color-mute)]"
+                }`}
+              >
+                {t}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       <div className="grid gap-5 sm:grid-cols-2">
         <div>
@@ -134,14 +177,14 @@ export function CaptureControls({
       <div className="flex items-center gap-4">
         <button
           onClick={onRun}
-          disabled={disabled || running}
+          disabled={disabled || running || enabledCount === 0}
           className="rounded-lg bg-[var(--color-accent)] px-5 py-2.5 text-sm font-medium text-black transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-30"
         >
-          {running ? "Capturing…" : `Capture ${trackCount} stems`}
+          {running ? "Capturing…" : `Capture ${enabledCount} stem${enabledCount === 1 ? "" : "s"}`}
         </button>
         {running && (
           <span className="text-sm text-[var(--color-mute)]">
-            track {status.track}/{status.total}
+            track {status.track} · {status.index}/{status.total}
           </span>
         )}
         {status.phase === "error" && <span className="text-sm text-red-400">{status.message}</span>}

@@ -25,6 +25,7 @@ export default function App() {
     bars: 8,
     latencyOffsetMs: 0,
     tailSec: 3,
+    disabledTracks: [],
   });
 
   // Un seul geste utilisateur : autorise MIDI et liste les devices audio.
