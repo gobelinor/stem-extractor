@@ -8,10 +8,6 @@
   <a href="https://github.com/gobelinor/stem-extractor/issues/new/choose">Request a machine</a>
 </p>
 
-<p align="center">
-  <a href="https://stem-extractor.pages.dev"><img src="docs/demo.gif" alt="Stem Extractor demo — solo each track, record, aligned WAV stems" width="720"></a>
-</p>
-
 Grooveboxes only send a **stereo** master over USB — no multitrack out. So getting stems means
 soloing each track by hand, recording, and repeating. Stem Extractor automates it: it solos each
 track over MIDI, records the stereo output, and gives you one **sample-aligned** WAV per track —
