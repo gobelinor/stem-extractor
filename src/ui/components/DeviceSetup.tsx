@@ -64,8 +64,7 @@ export function DeviceSetup({
   if (!midi.supported) {
     return (
       <p className="text-sm text-red-400">
-        Web MIDI isn’t available in this browser. Use <b>desktop Chrome or Edge</b>. iOS and iPadOS
-        aren’t supported — every iOS browser runs on WebKit, which has no Web MIDI.
+        Web MIDI isn’t available in this browser. Use <b>desktop Chrome or Edge</b>.
       </p>
     );
   }
